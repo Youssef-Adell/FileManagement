@@ -2,7 +2,7 @@ services:
   api:
     build:
       context: .
-      dockerfile: FileManagement.API/Dockerfile
+      dockerfile: backend/FileManagement.API/Dockerfile
     ports:
       - "5000:8080"
     environment:
