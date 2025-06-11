@@ -1,0 +1,23 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: FileManagement.API/Dockerfile
+    ports:
+      - "5000:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=db;Database=FileManagement;User Id=sa;Password=You$$efAdel123;TrustServerCertificate=True
+      - Cloudinary__CloudName=dhghzuzbo
+      - Cloudinary__ApiKey=458575585639673
+      - Cloudinary__ApiSecret=tr1mp9rrOuJ3WLLQtwgFU5oQv0Y
+    depends_on:
+      - db
+
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=You$$efAdel123
+    ports:
+      - "1433:1433"
