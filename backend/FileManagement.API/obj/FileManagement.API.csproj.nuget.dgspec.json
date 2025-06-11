@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "D:\\Development\\Projects\\FileManagement\\FileManagement.API\\FileManagement.API.csproj": {}
+    "D:\\Development\\Projects\\FileManagement\\backend\\FileManagement.API\\FileManagement.API.csproj": {}
   },
   "projects": {
-    "D:\\Development\\Projects\\FileManagement\\FileManagement.API\\FileManagement.API.csproj": {
+    "D:\\Development\\Projects\\FileManagement\\backend\\FileManagement.API\\FileManagement.API.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\Development\\Projects\\FileManagement\\FileManagement.API\\FileManagement.API.csproj",
+        "projectUniqueName": "D:\\Development\\Projects\\FileManagement\\backend\\FileManagement.API\\FileManagement.API.csproj",
         "projectName": "FileManagement.API",
-        "projectPath": "D:\\Development\\Projects\\FileManagement\\FileManagement.API\\FileManagement.API.csproj",
+        "projectPath": "D:\\Development\\Projects\\FileManagement\\backend\\FileManagement.API\\FileManagement.API.csproj",
         "packagesPath": "C:\\Users\\Youssef\\.nuget\\packages\\",
-        "outputPath": "D:\\Development\\Projects\\FileManagement\\FileManagement.API\\obj\\",
+        "outputPath": "D:\\Development\\Projects\\FileManagement\\backend\\FileManagement.API\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -32,11 +32,11 @@
           "net9.0": {
             "targetAlias": "net9.0",
             "projectReferences": {
-              "D:\\Development\\Projects\\FileManagement\\FileManagement.Business\\FileManagement.Business.csproj": {
-                "projectPath": "D:\\Development\\Projects\\FileManagement\\FileManagement.Business\\FileManagement.Business.csproj"
+              "D:\\Development\\Projects\\FileManagement\\backend\\FileManagement.Business\\FileManagement.Business.csproj": {
+                "projectPath": "D:\\Development\\Projects\\FileManagement\\backend\\FileManagement.Business\\FileManagement.Business.csproj"
               },
-              "D:\\Development\\Projects\\FileManagement\\FileManagement.Data\\FileManagement.Data.csproj": {
-                "projectPath": "D:\\Development\\Projects\\FileManagement\\FileManagement.Data\\FileManagement.Data.csproj"
+              "D:\\Development\\Projects\\FileManagement\\backend\\FileManagement.Data\\FileManagement.Data.csproj": {
+                "projectPath": "D:\\Development\\Projects\\FileManagement\\backend\\FileManagement.Data\\FileManagement.Data.csproj"
               }
             }
           }
@@ -99,14 +99,14 @@
         }
       }
     },
-    "D:\\Development\\Projects\\FileManagement\\FileManagement.Business\\FileManagement.Business.csproj": {
+    "D:\\Development\\Projects\\FileManagement\\backend\\FileManagement.Business\\FileManagement.Business.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\Development\\Projects\\FileManagement\\FileManagement.Business\\FileManagement.Business.csproj",
+        "projectUniqueName": "D:\\Development\\Projects\\FileManagement\\backend\\FileManagement.Business\\FileManagement.Business.csproj",
         "projectName": "FileManagement.Business",
-        "projectPath": "D:\\Development\\Projects\\FileManagement\\FileManagement.Business\\FileManagement.Business.csproj",
+        "projectPath": "D:\\Development\\Projects\\FileManagement\\backend\\FileManagement.Business\\FileManagement.Business.csproj",
         "packagesPath": "C:\\Users\\Youssef\\.nuget\\packages\\",
-        "outputPath": "D:\\Development\\Projects\\FileManagement\\FileManagement.Business\\obj\\",
+        "outputPath": "D:\\Development\\Projects\\FileManagement\\backend\\FileManagement.Business\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -127,8 +127,8 @@
           "net9.0": {
             "targetAlias": "net9.0",
             "projectReferences": {
-              "D:\\Development\\Projects\\FileManagement\\FileManagement.Data\\FileManagement.Data.csproj": {
-                "projectPath": "D:\\Development\\Projects\\FileManagement\\FileManagement.Data\\FileManagement.Data.csproj"
+              "D:\\Development\\Projects\\FileManagement\\backend\\FileManagement.Data\\FileManagement.Data.csproj": {
+                "projectPath": "D:\\Development\\Projects\\FileManagement\\backend\\FileManagement.Data\\FileManagement.Data.csproj"
               }
             }
           }
@@ -188,14 +188,14 @@
         }
       }
     },
-    "D:\\Development\\Projects\\FileManagement\\FileManagement.Data\\FileManagement.Data.csproj": {
+    "D:\\Development\\Projects\\FileManagement\\backend\\FileManagement.Data\\FileManagement.Data.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\Development\\Projects\\FileManagement\\FileManagement.Data\\FileManagement.Data.csproj",
+        "projectUniqueName": "D:\\Development\\Projects\\FileManagement\\backend\\FileManagement.Data\\FileManagement.Data.csproj",
         "projectName": "FileManagement.Data",
-        "projectPath": "D:\\Development\\Projects\\FileManagement\\FileManagement.Data\\FileManagement.Data.csproj",
+        "projectPath": "D:\\Development\\Projects\\FileManagement\\backend\\FileManagement.Data\\FileManagement.Data.csproj",
         "packagesPath": "C:\\Users\\Youssef\\.nuget\\packages\\",
-        "outputPath": "D:\\Development\\Projects\\FileManagement\\FileManagement.Data\\obj\\",
+        "outputPath": "D:\\Development\\Projects\\FileManagement\\backend\\FileManagement.Data\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

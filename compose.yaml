@@ -1,8 +1,8 @@
 services:
   api:
     build:
-      context: .
-      dockerfile: backend/FileManagement.API/Dockerfile
+      context: ./backend
+      dockerfile: FileManagement.API/Dockerfile
     ports:
       - "5000:8080"
     environment:
@@ -11,9 +11,10 @@ services:
       - Cloudinary__CloudName=dhghzuzbo
       - Cloudinary__ApiKey=458575585639673
       - Cloudinary__ApiSecret=tr1mp9rrOuJ3WLLQtwgFU5oQv0Y
+    restart:
+      on-failure
     depends_on:
       - db
-
   db:
     image: mcr.microsoft.com/mssql/server:2022-latest
     environment:
