@@ -6,8 +6,21 @@
           <v-card-title class="d-flex align-center">
             Submitted Files
             <v-spacer></v-spacer>
-            <v-btn color="primary" @click="showUploadDialog = true">
-              Upload New File
+            <v-btn
+              color="primary"
+              @click="showUploadDialog = true"
+              class="d-none d-sm-flex"
+            >
+              Add File
+            </v-btn>
+            <v-btn
+              color="primary"
+              size="small"
+              @click="showUploadDialog = true"
+              class="d-flex d-sm-none"
+              icon
+            >
+              <v-icon>mdi-plus</v-icon>
             </v-btn>
           </v-card-title>
           <v-card-text>
@@ -17,6 +30,9 @@
               :loading="loading"
               class="elevation-1"
             >
+              <template v-slot:item.status="{ item }">
+                <status-badge :status="item.status" />
+              </template>
               <template v-slot:item.actions="{ item }">
                 <v-btn
                   color="primary"
@@ -37,7 +53,7 @@
     <!-- Upload Dialog -->
     <v-dialog v-model="showUploadDialog" max-width="600px">
       <v-card>
-        <v-card-title>Upload New File</v-card-title>
+        <v-card-title>Add New File</v-card-title>
         <v-card-text>
           <v-form @submit.prevent="handleSubmit" ref="form">
             <v-text-field
@@ -71,7 +87,29 @@
               v-model="attachment"
               label="File"
               required
-              :rules="[(v) => !!v || 'File is required']"
+              :rules="[
+                (v) => !!v || 'File is required',
+                (v) => {
+                  if (!v) return true;
+                  const allowedTypes = [
+                    '.pdf',
+                    '.jpg',
+                    '.jpeg',
+                    '.png',
+                    '.doc',
+                    '.docx',
+                    '.xls',
+                    '.xlsx',
+                  ];
+                  const fileExtension =
+                    '.' + v.name.split('.').pop().toLowerCase();
+                  return (
+                    allowedTypes.includes(fileExtension) ||
+                    'Only PDF, JPG, PNG, DOC, DOCX, XLS, and XLSX files are allowed'
+                  );
+                },
+              ]"
+              accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx"
             ></v-file-input>
           </v-form>
         </v-card-text>
@@ -91,9 +129,13 @@
 import { ref, onMounted, computed } from 'vue';
 import axios from '../utils/axios';
 import { formatDate } from '../utils/dateUtils';
+import StatusBadge from '../components/StatusBadge.vue';
 
 export default {
   name: 'CreatorDashboardView',
+  components: {
+    StatusBadge,
+  },
   setup() {
     const files = ref([]);
     const classifications = ref([]);
