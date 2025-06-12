@@ -49,8 +49,8 @@ export default {
     const router = useRouter();
     const authStore = useAuthStore();
     const form = ref(null);
-    const username = ref('');
-    const password = ref('');
+    const username = ref('employee1');
+    const password = ref('password123');
     const loading = ref(false);
 
     const handleLogin = async () => {
