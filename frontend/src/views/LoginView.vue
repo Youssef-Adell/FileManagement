@@ -1,7 +1,7 @@
 <template>
-  <v-container class="fill-height" fluid>
-    <v-row align="center" justify="center">
-      <v-col cols="12" sm="8" md="4">
+  <v-container class="fill-height">
+    <v-row justify="center" align="center">
+      <v-col cols="12" sm="8" md="6" lg="4">
         <v-card class="elevation-12">
           <v-toolbar color="primary" dark flat>
             <v-toolbar-title>Login</v-toolbar-title>
@@ -11,61 +11,72 @@
               <v-text-field
                 v-model="username"
                 label="Username"
-                name="username"
                 prepend-icon="mdi-account"
                 type="text"
                 required
-              />
+                :rules="[(v) => !!v || 'Username is required']"
+              ></v-text-field>
               <v-text-field
                 v-model="password"
                 label="Password"
-                name="password"
                 prepend-icon="mdi-lock"
                 type="password"
                 required
-              />
+                :rules="[(v) => !!v || 'Password is required']"
+              ></v-text-field>
             </v-form>
           </v-card-text>
           <v-card-actions>
-            <v-spacer />
-            <v-btn
-              color="primary"
-              @click="handleLogin"
-              :loading="loading"
-              :disabled="loading"
-            >
+            <v-spacer></v-spacer>
+            <v-btn color="primary" @click="handleLogin" :loading="loading">
               Login
             </v-btn>
           </v-card-actions>
         </v-card>
-        <v-snackbar v-model="showError" color="error" timeout="3000">
-          {{ error }}
-        </v-snackbar>
       </v-col>
     </v-row>
   </v-container>
 </template>
 
-<script setup>
+<script>
 import { ref } from 'vue';
+import { useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
 
-const authStore = useAuthStore();
-const username = ref('');
-const password = ref('');
-const loading = ref(false);
-const error = ref('');
-const showError = ref(false);
+export default {
+  name: 'LoginView',
+  setup() {
+    const router = useRouter();
+    const authStore = useAuthStore();
+    const form = ref(null);
+    const username = ref('');
+    const password = ref('');
+    const loading = ref(false);
 
-const handleLogin = async () => {
-  try {
-    loading.value = true;
-    await authStore.login(username.value, password.value);
-  } catch (err) {
-    error.value = err;
-    showError.value = true;
-  } finally {
-    loading.value = false;
-  }
+    const handleLogin = async () => {
+      const { valid } = await form.value.validate();
+      if (!valid) return;
+
+      loading.value = true;
+      try {
+        const user = await authStore.login(username.value, password.value);
+        router.push(
+          user.role === 'Creator' ? '/creator-dashboard' : '/approver-dashboard'
+        );
+      } catch (error) {
+        console.error('Login failed:', error);
+      } finally {
+        loading.value = false;
+      }
+    };
+
+    return {
+      form,
+      username,
+      password,
+      loading,
+      handleLogin,
+    };
+  },
 };
 </script>

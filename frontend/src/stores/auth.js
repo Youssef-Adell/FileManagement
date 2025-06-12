@@ -1,36 +1,56 @@
 import { defineStore } from 'pinia'
-import { authService } from '../services/auth.service'
-import router from '../router'
+import axios from '../utils/axios'
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
-    userRole: localStorage.getItem('userRole') || null,
-    error: null
+    user: JSON.parse(localStorage.getItem('user')) || null,
+    token: localStorage.getItem('token') || null
   }),
 
   actions: {
     async login(username, password) {
       try {
-        this.error = null
-        const { role } = await authService.login(username, password)
-        this.userRole = role
+        const response = await axios.post('/api/Auth/login', { username, password })
+        const { token, user } = response.data
         
-        // Redirect based on role
-        if (role === 'Creator') {
-          router.push('/creator')
-        } else if (role === 'Approver') {
-          router.push('/approver')
-        }
+        this.token = token
+        this.user = user
+        localStorage.setItem('token', token)
+        localStorage.setItem('user', JSON.stringify(user))
+        
+        return user
       } catch (error) {
-        this.error = error
         throw error
       }
     },
 
     logout() {
-      authService.logout()
-      this.userRole = null
-      router.push('/login')
+      // Clear state first
+      this.user = null
+      this.token = null
+      
+      // Then clear storage
+      localStorage.removeItem('token')
+      localStorage.removeItem('user')
+      
+      // Clear any axios default headers
+      delete axios.defaults.headers.common['Authorization']
+    },
+
+    async restoreSession() {
+      const token = localStorage.getItem('token')
+      const user = JSON.parse(localStorage.getItem('user'))
+      
+      if (!token) return
+
+      try {
+        // You might want to add an endpoint to validate the token and get user info
+        // For now, we'll just restore from localStorage
+        this.token = token
+        this.user = user
+      } catch (error) {
+        this.logout()
+      }
     }
   }
 }) 

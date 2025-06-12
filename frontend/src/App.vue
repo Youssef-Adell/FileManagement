@@ -1,18 +1,26 @@
 <script setup>
-import { computed } from 'vue';
 import { useAuthStore } from './stores/auth';
+import { useRouter } from 'vue-router';
+
+const authStore = useAuthStore();
+const router = useRouter();
+
+const handleLogout = () => {
+  authStore.logout();
+  router.push('/login');
+};
 </script>
 
 <template>
   <v-app>
-    <v-app-bar v-if="isAuthenticated" color="primary" dark>
+    <v-app-bar v-if="authStore?.user" color="primary">
       <v-app-bar-title>File Management System</v-app-bar-title>
-      <v-spacer />
-      <v-btn @click="handleLogout" text>Logout</v-btn>
+      <v-spacer></v-spacer>
+      <v-btn @click="handleLogout" color="white" variant="text">Logout</v-btn>
     </v-app-bar>
 
     <v-main>
-      <router-view />
+      <router-view></router-view>
     </v-main>
   </v-app>
 </template>

@@ -5,31 +5,35 @@
         <v-card>
           <v-card-title class="d-flex align-center">
             Submitted Files
-            <v-spacer />
-            <v-btn color="primary" @click="showSubmitDialog = true">
-              Submit New File
+            <v-spacer></v-spacer>
+            <v-btn color="primary" @click="showUploadDialog = true">
+              Upload New File
             </v-btn>
           </v-card-title>
           <v-card-text>
-            <v-data-table :headers="headers" :items="files" :loading="loading">
-              <template v-slot:item.status="{ item }">
-                <v-chip :color="getStatusColor(item.status)" small>
-                  {{ item.status }}
-                </v-chip>
-              </template>
-            </v-data-table>
+            <v-data-table
+              :headers="headers"
+              :items="files"
+              :loading="loading"
+            ></v-data-table>
           </v-card-text>
         </v-card>
       </v-col>
     </v-row>
 
-    <!-- Submit File Dialog -->
-    <v-dialog v-model="showSubmitDialog" max-width="600px">
+    <!-- Upload Dialog -->
+    <v-dialog v-model="showUploadDialog" max-width="600px">
       <v-card>
-        <v-card-title>Submit New File</v-card-title>
+        <v-card-title>Upload New File</v-card-title>
         <v-card-text>
           <v-form @submit.prevent="handleSubmit" ref="form">
-            <v-text-field v-model="form.subject" label="Subject" required />
+            <v-text-field
+              v-model="form.subject"
+              label="Subject"
+              required
+              :rules="[(v) => !!v || 'Subject is required']"
+            ></v-text-field>
+
             <v-select
               v-model="form.classificationId"
               :items="classifications"
@@ -37,124 +41,146 @@
               item-value="id"
               label="Classification"
               required
-            />
-            <v-file-input
-              v-model="form.file"
-              label="File"
-              accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx"
+              :rules="[(v) => !!v || 'Classification is required']"
+            ></v-select>
+
+            <v-select
+              v-model="form.responsibleEmployeeId"
+              :items="employees"
+              item-title="fullName"
+              item-value="id"
+              label="Responsible Employee"
               required
-              :rules="fileRules"
-            />
+              :rules="[(v) => !!v || 'Responsible employee is required']"
+            ></v-select>
+
+            <v-file-input
+              v-model="form.attachment"
+              label="File"
+              required
+              :rules="[(v) => !!v || 'File is required']"
+            ></v-file-input>
           </v-form>
         </v-card-text>
         <v-card-actions>
-          <v-spacer />
-          <v-btn color="grey darken-1" text @click="showSubmitDialog = false">
-            Cancel
-          </v-btn>
-          <v-btn
-            color="primary"
-            @click="handleSubmit"
-            :loading="submitting"
-            :disabled="submitting"
-          >
+          <v-spacer></v-spacer>
+          <v-btn color="grey" @click="showUploadDialog = false">Cancel</v-btn>
+          <v-btn color="primary" @click="handleSubmit" :loading="submitting">
             Submit
           </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
-
-    <v-snackbar v-model="showError" color="error" timeout="3000">
-      {{ error }}
-    </v-snackbar>
   </v-container>
 </template>
 
-<script setup>
+<script>
 import { ref, onMounted } from 'vue';
-import { useFilesStore } from '../stores/files';
+import axios from '../utils/axios';
 
-const filesStore = useFilesStore();
-const showSubmitDialog = ref(false);
-const submitting = ref(false);
-const error = ref('');
-const showError = ref(false);
-
-const form = ref({
-  subject: '',
-  classificationId: null,
-  file: null,
-});
-
-const headers = [
-  { title: 'File Number', key: 'fileNumber' },
-  { title: 'Subject', key: 'subject' },
-  { title: 'Status', key: 'status' },
-  { title: 'Date', key: 'fileDate' },
-  { title: 'Classification', key: 'classificationName' },
-];
-
-const fileRules = [
-  (v) => !!v || 'File is required',
-  (v) => {
-    const allowedTypes = [
-      '.pdf',
-      '.jpg',
-      '.jpeg',
-      '.png',
-      '.doc',
-      '.docx',
-      '.xls',
-      '.xlsx',
-    ];
-    const fileExtension = '.' + v?.name?.split('.').pop().toLowerCase();
-    return allowedTypes.includes(fileExtension) || 'Invalid file type';
-  },
-];
-
-const getStatusColor = (status) => {
-  switch (status.toLowerCase()) {
-    case 'approved':
-      return 'success';
-    case 'rejected':
-      return 'error';
-    default:
-      return 'warning';
-  }
-};
-
-const handleSubmit = async () => {
-  try {
-    submitting.value = true;
-    const formData = new FormData();
-    formData.append('subject', form.value.subject);
-    formData.append('classificationId', form.value.classificationId);
-    formData.append('file', form.value.file);
-
-    await filesStore.submitFile(formData);
-    showSubmitDialog.value = false;
-    form.value = {
+export default {
+  name: 'CreatorDashboardView',
+  setup() {
+    const files = ref([]);
+    const classifications = ref([]);
+    const employees = ref([]);
+    const loading = ref(false);
+    const submitting = ref(false);
+    const showUploadDialog = ref(false);
+    const form = ref({
       subject: '',
       classificationId: null,
-      file: null,
-    };
-  } catch (err) {
-    error.value = err;
-    showError.value = true;
-  } finally {
-    submitting.value = false;
-  }
-};
+      responsibleEmployeeId: null,
+      attachment: null,
+    });
 
-onMounted(async () => {
-  try {
-    await Promise.all([
-      filesStore.fetchFiles(),
-      filesStore.fetchClassifications(),
-    ]);
-  } catch (err) {
-    error.value = err;
-    showError.value = true;
-  }
-});
+    const headers = [
+      { title: 'Subject', key: 'subject' },
+      { title: 'Classification', key: 'classification' },
+      { title: 'Responsible Employee', key: 'responsibleEmployee' },
+      { title: 'Status', key: 'status' },
+      { title: 'Submitted Date', key: 'submittedDate' },
+    ];
+
+    const fetchFiles = async () => {
+      loading.value = true;
+      try {
+        const response = await axios.get('/api/Files');
+        files.value = response.data;
+      } catch (error) {
+        console.error('Error fetching files:', error);
+      } finally {
+        loading.value = false;
+      }
+    };
+
+    const fetchClassifications = async () => {
+      try {
+        const response = await axios.get('/api/Classifications');
+        classifications.value = response.data;
+      } catch (error) {
+        console.error('Error fetching classifications:', error);
+      }
+    };
+
+    const fetchEmployees = async () => {
+      try {
+        const response = await axios.get('/api/Employees');
+        employees.value = response.data;
+      } catch (error) {
+        console.error('Error fetching employees:', error);
+      }
+    };
+
+    const handleSubmit = async () => {
+      const formData = new FormData();
+      formData.append('subject', form.value.subject);
+      formData.append('classificationId', form.value.classificationId);
+      formData.append(
+        'responsibleEmployeeId',
+        form.value.responsibleEmployeeId
+      );
+      formData.append('attachment', form.value.attachment);
+
+      submitting.value = true;
+      try {
+        await axios.post('/api/Files', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+        showUploadDialog.value = false;
+        await fetchFiles();
+        form.value = {
+          subject: '',
+          classificationId: null,
+          responsibleEmployeeId: null,
+          attachment: null,
+        };
+      } catch (error) {
+        console.error('Error submitting file:', error);
+      } finally {
+        submitting.value = false;
+      }
+    };
+
+    onMounted(() => {
+      fetchFiles();
+      fetchClassifications();
+      fetchEmployees();
+    });
+
+    return {
+      files,
+      classifications,
+      employees,
+      loading,
+      submitting,
+      showUploadDialog,
+      form,
+      headers,
+      handleSubmit,
+    };
+  },
+};
 </script>

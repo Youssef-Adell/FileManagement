@@ -1,37 +1,28 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import LoginView from '../views/LoginView.vue'
-import CreatorDashboardView from '../views/CreatorDashboardView.vue'
-import ApproverDashboardView from '../views/ApproverDashboardView.vue'
+import { useAuthStore } from '../stores/auth'
 
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
+  history: createWebHistory(),
   routes: [
     {
       path: '/',
-      redirect: to => {
-        const token = localStorage.getItem('token')
-        const userRole = localStorage.getItem('userRole')
-        
-        if (!token) return '/login'
-        return userRole === 'Creator' ? '/creator' : '/approver'
-      }
+      redirect: '/login'
     },
     {
       path: '/login',
-      name: 'login',
-      component: LoginView,
-      meta: { requiresGuest: true }
+      name: 'Login',
+      component: () => import('../views/LoginView.vue')
     },
     {
-      path: '/creator',
-      name: 'creator',
-      component: CreatorDashboardView,
+      path: '/creator-dashboard',
+      name: 'CreatorDashboard',
+      component: () => import('../views/CreatorDashboardView.vue'),
       meta: { requiresAuth: true, role: 'Creator' }
     },
     {
-      path: '/approver',
-      name: 'approver',
-      component: ApproverDashboardView,
+      path: '/approver-dashboard',
+      name: 'ApproverDashboard',
+      component: () => import('../views/ApproverDashboardView.vue'),
       meta: { requiresAuth: true, role: 'Approver' }
     }
   ]
@@ -39,23 +30,28 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
   const token = localStorage.getItem('token')
-  const userRole = localStorage.getItem('userRole')
+  const authStore = useAuthStore()
 
-  // If route requires guest (login page) and user is authenticated
-  if (to.meta.requiresGuest && token) {
-    // Redirect to appropriate dashboard based on role
-    return next(userRole === 'Creator' ? '/creator' : '/approver')
+  // If trying to access login page
+  if (to.path === '/login') {
+    if (token) {
+      // If logged in, redirect to appropriate dashboard based on role
+      return next(authStore.user?.role === 'Creator' ? '/creator-dashboard' : '/approver-dashboard')
+    }
+    return next()
   }
 
-  // If route requires auth and user is not authenticated
+  // If route requires auth and no token, redirect to login
   if (to.meta.requiresAuth && !token) {
     return next('/login')
   }
 
-  // If route requires specific role and user doesn't have it
-  if (to.meta.role && to.meta.role !== userRole) {
-    // Redirect to appropriate dashboard based on role
-    return next(userRole === 'Creator' ? '/creator' : '/approver')
+  // Check role-based access for protected routes
+  if (to.meta.requiresAuth && to.meta.role) {
+    if (authStore.user?.role !== to.meta.role) {
+      // If user's role doesn't match required role, redirect to appropriate dashboard
+      return next(authStore.user?.role === 'Creator' ? '/creator-dashboard' : '/approver-dashboard')
+    }
   }
 
   next()
