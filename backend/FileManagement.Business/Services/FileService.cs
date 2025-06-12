@@ -124,14 +124,14 @@ namespace FileManagement.Business.Services
         {
             var approvals = await _context.FileApprovals
                 .Where(a => a.ApproverId == userId && a.Status == ApprovalStatus.Pending)
-                .Where(a => a.ApprovalOrder == 1 || 
-                        (a.ApprovalOrder == 2 && 
-                        _context.FileApprovals.Any(prev => prev.FileId == a.FileId && 
-                                                            prev.ApprovalOrder == 1 && 
+                .Where(a => a.ApprovalOrder == 1 ||
+                        (a.ApprovalOrder == 2 &&
+                        _context.FileApprovals.Any(prev => prev.FileId == a.FileId &&
+                                                            prev.ApprovalOrder == 1 &&
                                                             prev.Status == ApprovalStatus.Approved)))
                 .Select(a => new PendingApprovalFileDto
                 {
-                    Id = a.Id,
+                    Id = a.FileId,
                     FileNumber = a.File!.FileNumber,
                     Subject = a.File!.Subject,
                     SubmitterName = a.File!.Submitter!.FullName,
@@ -170,8 +170,8 @@ namespace FileManagement.Business.Services
                 .Where(a => a.FileId == fileId)
                 .ToListAsync();
 
-            var newStatus = allApprovals.All(a => a.Status == ApprovalStatus.Approved || a.Id == approval.Id) 
-                ? FileStatus.Approved 
+            var newStatus = allApprovals.All(a => a.Status == ApprovalStatus.Approved || a.Id == approval.Id)
+                ? FileStatus.Approved
                 : FileStatus.Pending;
 
             // Update file status
@@ -207,4 +207,4 @@ namespace FileManagement.Business.Services
             await _context.SaveChangesAsync();
         }
     }
-} 
+}

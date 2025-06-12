@@ -15,7 +15,20 @@
               :headers="headers"
               :items="files"
               :loading="loading"
-            ></v-data-table>
+              class="elevation-1"
+            >
+              <template v-slot:item.actions="{ item }">
+                <v-btn
+                  color="primary"
+                  variant="text"
+                  @click="openFile(item.actions)"
+                  :disabled="!item.actions"
+                >
+                  <v-icon>mdi-file-download</v-icon>
+                  Download
+                </v-btn>
+              </template>
+            </v-data-table>
           </v-card-text>
         </v-card>
       </v-col>
@@ -28,14 +41,14 @@
         <v-card-text>
           <v-form @submit.prevent="handleSubmit" ref="form">
             <v-text-field
-              v-model="form.subject"
+              v-model="subject"
               label="Subject"
               required
               :rules="[(v) => !!v || 'Subject is required']"
             ></v-text-field>
 
             <v-select
-              v-model="form.classificationId"
+              v-model="classificationId"
               :items="classifications"
               item-title="name"
               item-value="id"
@@ -45,7 +58,7 @@
             ></v-select>
 
             <v-select
-              v-model="form.responsibleEmployeeId"
+              v-model="responsibleEmployeeId"
               :items="employees"
               item-title="fullName"
               item-value="id"
@@ -55,7 +68,7 @@
             ></v-select>
 
             <v-file-input
-              v-model="form.attachment"
+              v-model="attachment"
               label="File"
               required
               :rules="[(v) => !!v || 'File is required']"
@@ -75,8 +88,9 @@
 </template>
 
 <script>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import axios from '../utils/axios';
+import { formatDate } from '../utils/dateUtils';
 
 export default {
   name: 'CreatorDashboardView',
@@ -87,20 +101,40 @@ export default {
     const loading = ref(false);
     const submitting = ref(false);
     const showUploadDialog = ref(false);
-    const form = ref({
-      subject: '',
-      classificationId: null,
-      responsibleEmployeeId: null,
-      attachment: null,
-    });
+
+    // Separate refs for form fields
+    const subject = ref('');
+    const classificationId = ref(null);
+    const responsibleEmployeeId = ref(null);
+    const attachment = ref(null);
 
     const headers = [
       { title: 'Subject', key: 'subject' },
-      { title: 'Classification', key: 'classification' },
-      { title: 'Responsible Employee', key: 'responsibleEmployee' },
+      { title: 'Classification', key: 'classificationName' },
+      { title: 'Responsible Employee', key: 'responsibleEmployeeName' },
       { title: 'Status', key: 'status' },
-      { title: 'Submitted Date', key: 'submittedDate' },
+      { title: 'Submitted Date', key: 'formattedDate' },
+      { title: 'File', key: 'actions', sortable: false },
     ];
+
+    const openFile = (url) => {
+      window.open(url, '_blank');
+    };
+
+    const formattedFiles = computed(() => {
+      return files.value.map((file) => ({
+        ...file,
+        formattedDate: formatDate(file.fileDate),
+        actions: file.attachmentUrl,
+      }));
+    });
+
+    const resetForm = () => {
+      subject.value = '';
+      classificationId.value = null;
+      responsibleEmployeeId.value = null;
+      attachment.value = null;
+    };
 
     const fetchFiles = async () => {
       loading.value = true;
@@ -134,13 +168,10 @@ export default {
 
     const handleSubmit = async () => {
       const formData = new FormData();
-      formData.append('subject', form.value.subject);
-      formData.append('classificationId', form.value.classificationId);
-      formData.append(
-        'responsibleEmployeeId',
-        form.value.responsibleEmployeeId
-      );
-      formData.append('attachment', form.value.attachment);
+      formData.append('subject', subject.value);
+      formData.append('classificationId', classificationId.value);
+      formData.append('responsibleEmployeeId', responsibleEmployeeId.value);
+      formData.append('attachment', attachment.value);
 
       submitting.value = true;
       try {
@@ -151,12 +182,7 @@ export default {
         });
         showUploadDialog.value = false;
         await fetchFiles();
-        form.value = {
-          subject: '',
-          classificationId: null,
-          responsibleEmployeeId: null,
-          attachment: null,
-        };
+        resetForm();
       } catch (error) {
         console.error('Error submitting file:', error);
       } finally {
@@ -171,15 +197,19 @@ export default {
     });
 
     return {
-      files,
+      files: formattedFiles,
       classifications,
       employees,
       loading,
       submitting,
       showUploadDialog,
-      form,
+      subject,
+      classificationId,
+      responsibleEmployeeId,
+      attachment,
       headers,
       handleSubmit,
+      openFile,
     };
   },
 };

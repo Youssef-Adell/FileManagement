@@ -7,7 +7,7 @@ services:
       - "5000:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__DefaultConnection=Server=db;Database=FileManagement;User Id=sa;Password=You$$efAdel123;TrustServerCertificate=True
+      - ConnectionStrings__DefaultConnection=Server=db;Database=FileManagement;User Id=sa;Password=StrongPassw0rd!;TrustServerCertificate=True
       - Cloudinary__CloudName=dhghzuzbo
       - Cloudinary__ApiKey=458575585639673
       - Cloudinary__ApiSecret=tr1mp9rrOuJ3WLLQtwgFU5oQv0Y
@@ -19,6 +19,6 @@ services:
     image: mcr.microsoft.com/mssql/server:2022-latest
     environment:
       - ACCEPT_EULA=Y
-      - SA_PASSWORD=You$$efAdel123
+      - SA_PASSWORD=StrongPassw0rd!
     ports:
       - "1433:1433"

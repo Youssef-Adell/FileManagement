@@ -1,33 +1,46 @@
 <template>
   <v-container>
     <v-row>
-      <v-col cols="12">
+      <v-col>
         <v-card>
-          <v-card-title>Pending Approvals</v-card-title>
+          <v-card-title>Pending Files</v-card-title>
           <v-card-text>
             <v-data-table
               :headers="headers"
-              :items="pendingFiles"
+              :items="files"
               :loading="loading"
+              class="elevation-1"
             >
               <template v-slot:item.actions="{ item }">
                 <v-btn
-                  v-if="item.raw"
-                  color="success"
-                  size="small"
-                  class="me-2"
-                  @click="handleApprove(item.raw)"
-                  :loading="item.raw?.approving"
+                  color="primary"
+                  variant="text"
+                  @click="openFile(item.actions)"
+                  :disabled="!item.actions"
                 >
+                  <v-icon>mdi-file-download</v-icon>
+                  Download
+                </v-btn>
+              </template>
+              <template v-slot:item.approvalActions="{ item }">
+                <v-btn
+                  color="success"
+                  variant="text"
+                  @click="handleApprove(item)"
+                  :loading="item.approving"
+                  :disabled="item.approving || item.rejecting"
+                >
+                  <v-icon>mdi-check</v-icon>
                   Approve
                 </v-btn>
                 <v-btn
-                  v-if="item.raw"
                   color="error"
-                  size="small"
-                  @click="handleReject(item.raw)"
-                  :loading="item.raw?.rejecting"
+                  variant="text"
+                  @click="handleReject(item)"
+                  :loading="item.rejecting"
+                  :disabled="item.approving || item.rejecting"
                 >
+                  <v-icon>mdi-close</v-icon>
                   Reject
                 </v-btn>
               </template>
@@ -40,97 +53,84 @@
 </template>
 
 <script>
-import { ref, onMounted, onBeforeUnmount } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import axios from '../utils/axios';
+import { formatDate } from '../utils/dateUtils';
 
 export default {
   name: 'ApproverDashboardView',
   setup() {
-    const pendingFiles = ref([]);
+    const files = ref([]);
     const loading = ref(false);
-    let mounted = true;
 
     const headers = [
       { title: 'Subject', key: 'subject' },
-      { title: 'Classification', key: 'classification' },
-      { title: 'Responsible Employee', key: 'responsibleEmployee' },
-      { title: 'Submitted Date', key: 'submittedDate' },
-      { title: 'Actions', key: 'actions', sortable: false },
+      { title: 'Classification', key: 'classificationName' },
+      { title: 'Submitter', key: 'submitterName' },
+      { title: 'Submitted Date', key: 'formattedDate' },
+      { title: 'File', key: 'actions', sortable: false },
+      { title: 'Actions', key: 'approvalActions', sortable: false },
     ];
 
-    const fetchPendingFiles = async () => {
-      if (!mounted) return;
+    const openFile = (url) => {
+      window.open(url, '_blank');
+    };
 
+    const formattedFiles = computed(() => {
+      return files.value.map((file) => ({
+        ...file,
+        formattedDate: formatDate(file.fileDate),
+        actions: file.attachmentUrl,
+      }));
+    });
+
+    const fetchPendingFiles = async () => {
       loading.value = true;
       try {
         const response = await axios.get('/api/Files/pending-approvals');
-        if (mounted) {
-          pendingFiles.value = response.data.map((file) => ({
-            ...file,
-            approving: false,
-            rejecting: false,
-          }));
-        }
+        files.value = response.data;
       } catch (error) {
         console.error('Error fetching pending files:', error);
       } finally {
-        if (mounted) {
-          loading.value = false;
-        }
+        loading.value = false;
       }
     };
 
     const handleApprove = async (file) => {
       if (!file) return;
-
       file.approving = true;
       try {
         await axios.post(`/api/Files/${file.id}/approve`);
-        if (mounted) {
-          await fetchPendingFiles();
-        }
+        await fetchPendingFiles();
       } catch (error) {
         console.error('Error approving file:', error);
       } finally {
-        if (mounted && file) {
-          file.approving = false;
-        }
+        file.approving = false;
       }
     };
 
     const handleReject = async (file) => {
       if (!file) return;
-
       file.rejecting = true;
       try {
         await axios.post(`/api/Files/${file.id}/reject`);
-        if (mounted) {
-          await fetchPendingFiles();
-        }
+        await fetchPendingFiles();
       } catch (error) {
         console.error('Error rejecting file:', error);
       } finally {
-        if (mounted && file) {
-          file.rejecting = false;
-        }
+        file.rejecting = false;
       }
     };
 
-    onMounted(() => {
-      mounted = true;
-      fetchPendingFiles();
-    });
-
-    onBeforeUnmount(() => {
-      mounted = false;
-    });
+    onMounted(fetchPendingFiles);
 
     return {
-      pendingFiles,
+      files: formattedFiles,
       loading,
       headers,
       handleApprove,
       handleReject,
+      openFile,
     };
   },
 };
